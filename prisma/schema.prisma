@@ -1,0 +1,144 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ユーザー
+model User {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  role         UserRole  @default(REPORTER)
+  totpSecret   String?   @map("totp_secret")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  articles     Article[]
+  images       Image[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  REPORTER
+  EDITOR
+  ADMIN
+}
+
+// カテゴリ
+model Category {
+  id           String    @id @default(uuid())
+  name         String
+  slug         String    @unique
+  description  String?   @db.Text
+  displayOrder Int       @map("display_order")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  articles     Article[]
+
+  @@map("categories")
+}
+
+// タグ
+model Tag {
+  id        String    @id @default(uuid())
+  name      String
+  slug      String    @unique
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  articles  ArticleTag[]
+
+  @@map("tags")
+}
+
+// 記事
+model Article {
+  id          String        @id @default(uuid())
+  title       String
+  content     Json          // TipTap JSON形式
+  excerpt     String?       @db.Text // リード文
+  status      ArticleStatus @default(DRAFT)
+  publishedAt DateTime?     @map("published_at")
+  authorId    String        @map("author_id")
+  categoryId  String        @map("category_id")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  author      User          @relation(fields: [authorId], references: [id])
+  category    Category      @relation(fields: [categoryId], references: [id])
+  tags        ArticleTag[]
+  images      ArticleImage[]
+
+  @@index([authorId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([publishedAt])
+  @@map("articles")
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  SCHEDULED
+  ARCHIVED
+}
+
+// 記事-タグ 中間テーブル
+model ArticleTag {
+  articleId String   @map("article_id")
+  tagId     String   @map("tag_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+  @@index([tagId])
+  @@map("article_tags")
+}
+
+// 画像
+model Image {
+  id         String   @id @default(uuid())
+  fileName   String   @map("file_name")
+  filePath   String   @map("file_path")
+  mimeType   String   @map("mime_type")
+  fileSize   Int      @map("file_size")
+  width      Int
+  height     Int
+  alt        String?
+  caption    String?  @db.Text
+  uploaderId String   @map("uploader_id")
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  uploader   User     @relation(fields: [uploaderId], references: [id])
+  articles   ArticleImage[]
+
+  @@index([uploaderId])
+  @@index([uploadedAt])
+  @@map("images")
+}
+
+// 記事-画像 中間テーブル
+model ArticleImage {
+  articleId String   @map("article_id")
+  imageId   String   @map("image_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  image     Image    @relation(fields: [imageId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, imageId])
+  @@index([imageId])
+  @@map("article_images")
+}

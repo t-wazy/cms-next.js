@@ -1,0 +1,15 @@
+# Development Dockerfile with hot reload
+
+FROM node:20-alpine
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+# Install dependencies will be done via volume mount
+# Just ensure pnpm is available
+
+EXPOSE 3000
+
+# Command will be overridden by docker-compose
+CMD ["pnpm", "dev"]
