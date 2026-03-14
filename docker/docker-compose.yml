@@ -1,9 +1,11 @@
 version: '3.8'
+name: next-cms
 
 services:
   db:
     image: mysql:8.0
     container_name: cms_mysql
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root_password
       MYSQL_DATABASE: cms_db
