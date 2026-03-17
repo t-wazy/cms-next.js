@@ -37,7 +37,7 @@ export function Header({ onMenuClick, userName, onLogout }: HeaderProps) {
 
           {/* ロゴ */}
           <h1 className="text-lg md:text-xl font-bold text-gray-900">
-            勝毎CMS
+            Next-CMS
           </h1>
         </div>
 

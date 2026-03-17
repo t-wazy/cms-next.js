@@ -44,8 +44,8 @@ export async function POST(request: NextRequest) {
     if (action === 'generate') {
       // シークレット生成
       const secretObj = speakeasy.generateSecret({
-        name: `勝毎CMS (${session.user.email})`,
-        issuer: '勝毎電子版CMS',
+        name: `Next-CMS (${session.user.email})`,
+        issuer: 'Next-CMS',
       });
 
       // QRコード生成
