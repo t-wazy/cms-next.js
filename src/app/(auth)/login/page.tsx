@@ -83,7 +83,7 @@ function LoginForm() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="admin@kachimai.jp"
+            placeholder="admin@example.jp"
             required
           />
 

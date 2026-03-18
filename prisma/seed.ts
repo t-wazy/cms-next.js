@@ -11,7 +11,7 @@ async function main() {
   const admin = await prisma.user.create({
     data: {
       name: '管理者',
-      email: 'admin@kachimai.jp',
+      email: 'admin@example.jp',
       passwordHash,
       role: UserRole.ADMIN,
     },
@@ -20,7 +20,7 @@ async function main() {
   const editor = await prisma.user.create({
     data: {
       name: '編集者',
-      email: 'editor@kachimai.jp',
+      email: 'editor@example.jp',
       passwordHash,
       role: UserRole.EDITOR,
     },
@@ -29,7 +29,7 @@ async function main() {
   const reporter = await prisma.user.create({
     data: {
       name: '記者',
-      email: 'reporter@kachimai.jp',
+      email: 'reporter@example.jp',
       passwordHash,
       role: UserRole.REPORTER,
     },

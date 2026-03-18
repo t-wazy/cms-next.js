@@ -141,14 +141,42 @@ pnpm lint         # ESLint実行
 ### Prisma
 
 ```bash
-pnpm prisma studio              # Prisma Studio起動
-pnpm prisma migrate dev         # マイグレーション作成・適用
-pnpm prisma migrate deploy      # マイグレーション適用（本番）
-pnpm prisma db seed             # シードデータ投入
-pnpm prisma generate            # Prisma Client生成
+pnpm prisma:studio              # Prisma Studio起動
+pnpm prisma:migrate             # マイグレーション作成・適用
+pnpm prisma:seed                # シードデータ投入
+pnpm prisma:generate            # Prisma Client生成
 ```
 
+### データベースリセット
+
+```bash
+pnpm db:reset                   # DBリセット（.envのDATABASE_URL使用）
+pnpm db:reset:local             # DBリセット（.env.localを使用、ポート3306）
+pnpm db:reset:docker            # DBリセット（.env.dockerを使用、ポート3307）
+pnpm db:reset:force             # 確認なしでDBリセット
+```
+
+**環境ファイルの使い分け**:
+- `.env` - デフォルト設定（通常は.env.localまたは.env.dockerへのシンボリックリンク）
+- `.env.local` - ローカルMySQL環境用（ポート3306）
+- `.env.docker` - Docker MySQL環境用（ポート3307）
+
+**注意**: `db:reset`系コマンドは以下を実行します：
+1. データベース全体をDROP
+2. 再作成
+3. マイグレーション実行
+4. シードデータ自動投入
+
 ### Docker
+
+```bash
+pnpm docker:up                  # Docker起動
+pnpm docker:down                # Docker停止
+pnpm docker:restart             # Docker再起動
+pnpm docker:reset               # Docker完全リセット（ボリューム削除+再ビルド）
+```
+
+**詳細コマンド**:
 
 ```bash
 # 本番環境
@@ -158,32 +186,42 @@ cd docker && docker compose up -d --build
 cd docker && docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
 
 # ログ確認
-docker compose logs -f app
-
-# コンテナ停止
-docker compose down
-
-# ボリューム含めて削除
-docker compose down -v
+cd docker && docker compose logs -f app
 ```
 
 ## トラブルシューティング
+
+### ログインできない
+
+シードデータを再投入してください：
+
+```bash
+pnpm db:reset:docker
+```
+
+テストユーザー:
+- **ADMIN**: admin@example.jp / password123
+- **EDITOR**: editor@example.jp / password123
+- **REPORTER**: reporter@example.jp / password123
 
 ### Prismaマイグレーションエラー
 
 ```bash
 # Prisma Clientを再生成
-pnpm prisma generate
+pnpm prisma:generate
 
 # データベースをリセット（開発環境のみ）
-pnpm prisma migrate reset
+pnpm db:reset:docker
 ```
 
 ### Dockerビルドエラー
 
 ```bash
-# キャッシュをクリアして再ビルド
-docker compose build --no-cache app
+# Dockerを完全リセット
+pnpm docker:reset
+
+# DBが起動したら（10秒待つ）、マイグレーションとシード実行
+pnpm db:reset:docker
 ```
 
 ### ホットリロードが動作しない

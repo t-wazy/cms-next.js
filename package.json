@@ -10,7 +10,16 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "db:reset": "dotenv -e .env -- prisma migrate reset --skip-generate",
+    "db:reset:local": "dotenv -e .env.local -- prisma migrate reset --skip-generate",
+    "db:reset:docker": "dotenv -e .env.docker -- prisma migrate reset --skip-generate",
+    "db:reset:force": "dotenv -e .env -- prisma migrate reset --skip-generate --force",
+    "db:reset:auto": "node scripts/db-reset.js",
+    "docker:up": "cd docker && docker compose up -d",
+    "docker:down": "cd docker && docker compose down",
+    "docker:restart": "cd docker && docker compose restart",
+    "docker:reset": "cd docker && docker compose down -v && docker compose up -d --build"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
@@ -41,6 +50,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/speakeasy": "^2.0.10",
+    "dotenv": "^17.3.1",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "prisma": "^5.22.0",
