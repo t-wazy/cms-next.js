@@ -1,15 +1,19 @@
-# Development Dockerfile with hot reload
-
 FROM node:20-alpine
 
+RUN apk add --no-cache libc6-compat openssl
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-# Install dependencies will be done via volume mount
-# Just ensure pnpm is available
+# 依存関係ファイルのみコピーしてインストール
+# ソースコードはボリュームマウントで上書きされるが、
+# node_modules は匿名ボリュームでコンテナ内に保持される
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY prisma ./prisma
+
+RUN pnpm install
+RUN pnpm prisma generate
 
 EXPOSE 3000
 
-# Command will be overridden by docker-compose
 CMD ["pnpm", "dev"]

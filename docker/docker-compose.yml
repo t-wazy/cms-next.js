@@ -17,24 +17,47 @@ services:
       - mysql_data:/var/lib/mysql
       - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  migrate:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    environment:
+      DATABASE_URL: "mysql://cms_user:cms_password@db:3306/cms_db"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh -c "pnpm prisma migrate deploy && pnpm prisma:seed"
+    restart: "no"
 
   app:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.nextjs
+      dockerfile: docker/Dockerfile.dev
     container_name: cms_app
     restart: unless-stopped
     ports:
       - "3000:3000"
     volumes:
+      - ..:/app
+      - /app/node_modules
+      - /app/.next
       - ../public/uploads:/app/public/uploads
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       DATABASE_URL: "mysql://cms_user:cms_password@db:3306/cms_db"
-      NEXTAUTH_URL: "${NEXTAUTH_URL:-http://localhost:3000}"
-      NEXTAUTH_SECRET: "${NEXTAUTH_SECRET}"
+      NEXTAUTH_URL: "http://localhost:3000"
+      NEXTAUTH_SECRET: "local-dev-secret-key-change-in-production-xxxxx"
     depends_on:
-      - db
+      migrate:
+        condition: service_completed_successfully
+    command: pnpm dev
 
 volumes:
   mysql_data:

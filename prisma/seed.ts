@@ -5,6 +5,15 @@ import bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
+  // 既にシードデータが存在する場合はスキップ
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: 'admin@example.jp' },
+  });
+  if (existingAdmin) {
+    console.log('シードデータは既に存在します。スキップします。');
+    return;
+  }
+
   // ユーザー作成
   const passwordHash = await bcrypt.hash('password123', 10);
 
